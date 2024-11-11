@@ -8,7 +8,8 @@ import Login from './components/Login';
 import { todoService } from './services/todoService';
 import { getColorByDueDate } from './Task';
 import { userService } from './services/userService';
-import Register from './components/Register'; // Import Register component
+import Register from './components/Register';
+import Calendar from './components/Calendar';
 
 
 
@@ -47,6 +48,9 @@ function App() {
     return savedUser ? JSON.parse(savedUser) : null;
   });
 
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDateTasks, setSelectedDateTasks] = useState([]);
+
   const [isRegistering, setIsRegistering] = useState(false);
 
   // State cho danh sách tasks và form input
@@ -72,6 +76,51 @@ function App() {
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+
+  const handleDateSelect = (date) => {
+    const tasksOnDate = tasks.filter(task => {
+      // Xử lý các trường hợp đặc biệt như "Today", "Tomorrow"
+      if (task.date === "Today") {
+        const today = new Date();
+        return (
+          date.getDate() === today.getDate() &&
+          date.getMonth() === today.getMonth() &&
+          date.getFullYear() === today.getFullYear()
+        );
+      }
+      
+      if (task.date === "Tomorrow") {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return (
+          date.getDate() === tomorrow.getDate() &&
+          date.getMonth() === tomorrow.getMonth() &&
+          date.getFullYear() === tomorrow.getFullYear()
+        );
+      }
+  
+      // Nếu là ngày bình thường (format: DD/MM)
+      if (task.date.includes('/')) {
+        const [taskDay, taskMonth] = task.date.split('/');
+        return (
+          date.getDate() === parseInt(taskDay) &&
+          date.getMonth() === parseInt(taskMonth) - 1
+        );
+      }
+  
+      // Xử lý các trường hợp còn lại (ngày trong tuần)
+      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      if (daysOfWeek.includes(task.date)) {
+        return date.getDay() === daysOfWeek.indexOf(task.date);
+      }
+  
+      return false;
+    });
+  
+    console.log('Selected date:', date);
+    console.log('Tasks on date:', tasksOnDate);
+    setSelectedDateTasks(tasksOnDate);
+  };
 
   // Sửa hàm setUser để lưu vào localStorage
   const handleLogin = (userData) => {
@@ -499,6 +548,12 @@ function App() {
       </div>
       
       <div className="sort-buttons">
+      <button 
+          className={`sort-button ${showCalendar ? 'active' : ''}`}
+          onClick={() => setShowCalendar(!showCalendar)}
+        >
+          Lịch
+        </button>
         <button 
           className={`sort-button ${sortOrder === 'desc' ? 'active' : ''}`} 
           onClick={handleSortById}
@@ -524,7 +579,7 @@ function App() {
           Sắp xếp theo ngày {dateSortOrder === 'asc' ? '↑' : '↓'}
         </button>
       </div>
-
+      
       <AddTask
         newTask={newTask}
         newDate={newDate}
@@ -532,8 +587,25 @@ function App() {
         setNewDate={setNewDate}
         addTask={addTask}
       />
-  
-        {isColorSorted ? (
+      {showCalendar ? (
+      <div className="calendar-view">
+        <div className="calendar-section">
+          <Calendar tasks={tasks} onSelectDate={handleDateSelect} />
+        </div>
+        <div className="tasks-section">
+          <h3>Công việc trong ngày</h3>
+          {selectedDateTasks.length > 0 ? (
+            <TaskList 
+              tasks={selectedDateTasks}
+              onToggleComplete={toggleTaskComplete}
+              onEdit={handleEditTask}
+            />
+          ) : (
+            <p>Không có công việc nào trong ngày này</p>
+          )}
+        </div>
+      </div>
+    ) : isColorSorted ? (
         <div className="color-sorted-list">
           <div className="color-column">
             <h3>Làm gấp!!</h3>

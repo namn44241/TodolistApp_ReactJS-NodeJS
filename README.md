@@ -1,8 +1,53 @@
-# NOTEBOOK MÔN LẬP TRÌNH WEB - THẦY VŨ VĂN THƯƠNG PTIT
+## Cấu trúc project
 
-**MSV:** B23DCCC121  
-**TÊN:** NGUYỄN HỮU NAM  
-**LỚP:** D23CQCC01-B
+project/
+├── client/                  # Frontend - React
+│   └── src/
+│       ├── components/
+│       │   ├── Login.js     # Đăng nhập
+│       │   ├── Register.js  # Đăng ký
+│       │   ├── TaskModal.js # Thêm task
+│       │   └── EditTaskModal.js # Sửa task
+│       ├── services/
+│       │   ├── todoService.js # API todos
+│       │   └── userService.js # API users
+│       ├── AddTask.js      # Component thêm task
+│       ├── App.js          # Component chính
+│       ├── Task.js         # Hiển thị task
+│       └── TaskList.js     # List tasks
+│
+├── server/                  # Backend - Node.js + Express
+│   └── src/
+│       ├── configs/
+│       │   └── database.js  # Config MySQL
+│       ├── controllers/
+│       │   ├── todoController.js # Logic todos
+│       │   └── userController.js # Logic users
+│       ├── models/
+│       │   ├── todoModel.js # DB todos
+│       │   └── userModel.js # DB users
+│       ├── routes/
+│       │   ├── todoRoutes.js # Routes todos
+│       │   └── userRoutes.js # Routes users
+│       └── app.js           # Entry point
+│
+└── database/               # MySQL
+    ├── createTable.sql    # Schema
+    └── insertTable.sql    # Sample data
+
+## API Endpoints
+
+   /api/users
+     POST /register
+     POST /login
+     GET /
+   
+   /api/todos
+     GET /
+     GET /:id
+     POST /
+     PUT /:id
+     DELETE /:id
 
 ## Hướng dẫn chi tiết Bai_tap_Giua_Ki
 
