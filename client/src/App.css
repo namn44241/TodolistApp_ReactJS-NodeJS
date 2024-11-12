@@ -6,26 +6,43 @@
   padding: 20px;
 }
 
+.app > h1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
 h1 {
   font-size: 2em;
   display: flex;
   align-items: center;
-  
-  span {
-    margin-left: 10px;
-  }
+  margin: 0;
+}
+
+h1 span {
+  margin-left: 10px;
 }
 
 /* Task Components */
 .task-list {
+  animation: fadeInUp 0.6s ease-out;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1rem;
   padding: 1rem;
   margin-top: 20px;
 }
+/* Responsive */
+@media (max-width: 768px) {
+  .task-list {
+    grid-template-columns: 1fr;
+  }
+}
 
 .task {
+  animation: fadeIn 0.3s ease-out;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -96,6 +113,7 @@ h1 {
 
 /* Modal Base */
 .modal-overlay {
+  animation: fadeIn 0.3s ease-out;
   position: fixed;
   inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
@@ -113,6 +131,8 @@ h1 {
   max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
+  animation: slideIn 0.3s ease-out;
+  transform-origin: top;
 }
 
 .modal-content h2 {
@@ -187,13 +207,6 @@ h1 {
   color: white;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .task-list {
-    grid-template-columns: 1fr;
-  }
-}
-
 /* Add Task Form */
 .add-task {
   max-width: 800px;
@@ -235,6 +248,7 @@ h1 {
 
 /* Sort Buttons */
 .sort-buttons {
+  animation: fadeInDown 0.6s ease-out;
   margin: 20px 0;
   margin-bottom: 30px;
   display: flex;
@@ -424,6 +438,9 @@ h1 {
 
 .user-info span {
   font-weight: 500;
+  font-size: 18px;  
+  display: flex;
+  align-items: center;
 }
 
 .logout-btn {
@@ -503,8 +520,8 @@ select {
   background-color: white;
   font-size: 14px;
   cursor: pointer;
-  appearance: none;  /* Bỏ mũi tên mặc định */
-  background-image: url("data:image/svg+xml,...");  /* Thêm mũi tên custom */
+  appearance: none; 
+  background-image: url("data:image/svg+xml,..."); 
   background-repeat: no-repeat;
   background-position: right 8px center;
 }
@@ -526,6 +543,7 @@ select:focus {
 }
 
 .calendar {
+  animation: fadeInRight 0.4s ease-out;
   width: 300px;
   background: white;
   border-radius: 10px;
@@ -534,6 +552,7 @@ select:focus {
 }
 
 .calendar-header {
+  animation: fadeIn 0.5s ease-out;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -554,15 +573,18 @@ select:focus {
   text-align: center;
   font-weight: bold;
   margin-bottom: 10px;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .days {
+  animation: fadeIn 0.7s ease-out;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 5px;
 }
 
 .day {
+  transition: all 0.2s ease;
   position: relative;
   height: 35px;
   display: flex;
@@ -575,12 +597,12 @@ select:focus {
 }
 
 .one-task {
-  background-color: #e6f3ff; /* Màu xanh nhạt cho 1 task */
+  background-color: #e6f3ff; 
   border: 2px solid #1a73e8;
 }
 
 .multiple-tasks {
-  background-color: #fff0e6; /* Màu cam nhạt cho 2-4 tasks */
+  background-color: #fff0e6; 
   border: 2px solid #ff8533;
 }
 
@@ -627,10 +649,6 @@ select:focus {
   opacity: 0.5;
 }
 
-.other-month {
-  color: #ccc;
-}
-
 .today {
   background-color: #6366f1;
   color: white;
@@ -638,11 +656,6 @@ select:focus {
 
 .has-tasks {
   border: 2px solid #6366f1;
-}
-
-.selected {
-  background-color: #818cf8;
-  color: white;
 }
 
 .calendar-view {
@@ -653,13 +666,15 @@ select:focus {
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  animation: scaleIn 0.3s ease-out;
 }
 
 .calendar-section {
-  flex: 0 0 auto; /* Không cho calendar co giãn */
+  flex: 0 0 auto; 
 }
 
 .tasks-section {
+  animation: fadeInLeft 0.4s ease-out;
   flex: 1;
   min-width: 300px;
   padding: 20px;
@@ -673,8 +688,78 @@ select:focus {
   color: #333;
 }
 
-/* Sửa lại style cho nút Lịch active */
-.sort-button.active {
-  background-color: #6366f1;
-  color: white;
+/* Định nghĩa các keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInRight {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

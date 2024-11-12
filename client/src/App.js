@@ -539,13 +539,14 @@ function App() {
   return (
     <div className="app">
       <h1>
-        My work <span role="img" aria-label="target">🎯</span>
+        <div>
+          My work <span role="img" aria-label="target">🎯</span>
+        </div>
+        <div className="user-info">
+          <span>{user.username}</span>
+          <button className="logout-btn" onClick={handleLogout}>Đăng xuất</button>
+        </div>
       </h1>
-
-      <div className="user-info">
-        <span>{user.username}</span>
-        <button className="logout-btn" onClick={handleLogout}>Đăng xuất</button>
-      </div>
       
       <div className="sort-buttons">
       <button 
