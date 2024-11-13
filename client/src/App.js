@@ -229,7 +229,17 @@ function App() {
       // Nếu đang ở guest mode
       if (isGuestMode) {
         const guestTasks = localStorageService.getTasks();
-        setTasks(guestTasks);
+        // Format lại dữ liệu từ localStorage
+        const formattedTasks = guestTasks.map(task => ({
+          id: task.id,
+          name: task.title,
+          description: task.description,
+          // Chuyển đổi ngày sang định dạng hiển thị
+          date: convertDateToDayOfWeek(formatDate(task.due_date)),
+          completed: task.completed,
+          assigned_to: null
+        }));
+        setTasks(formattedTasks);
         return;
       }
   
@@ -365,11 +375,8 @@ function App() {
         // Thêm task vào localStorage
         const newTask = localStorageService.addTask({
           title: formData.title,
-          description: formData.description || '',
-          due_date: formData.due_date, // Giữ nguyên ngày được chọn
-          completed: false,
-          assigned_to: null,
-          subtasks: []
+          description: formData.description,
+          due_date: formData.due_date // Gửi ngày gốc vào localStorage
         });
 
         // Thêm vào state với đúng format hiển thị
@@ -382,7 +389,14 @@ function App() {
           assigned_to: null
         };
         
-        setTasks(prev => [...prev, formattedTask]);
+        setTasks(prev => [...prev, {
+          id: newTask.id,
+          name: newTask.title,
+          description: newTask.description,
+          date: convertDateToDayOfWeek(formatDate(newTask.due_date)),
+          completed: false,
+          assigned_to: null
+        }]);
       } else {
         // Logic cho user đăng nhập
         const response = await todoService.createTodo({
@@ -410,12 +424,10 @@ function App() {
 
       // Reset form và đóng modal sau khi đã thêm task thành công
       setModalOpen(false);
-      setNewTask('');
-      setNewDate('');
       setTaskData({
         title: '',
         description: '',
-        due_date: '', // Reset sau khi đã thêm task
+        due_date: '',
         completed: false,
         assigned_to: null
       });
@@ -482,13 +494,15 @@ function App() {
    // Thêm hàm xử lý edit task
    const handleEditTask = async (task) => {
     if (isGuestMode) {
-      // Trong guest mode, set data trực tiếp từ task hiện tại
+      // Chuyển đổi ngày từ định dạng hiển thị sang YYYY-MM-DD
+      const convertedDate = convertDateFormat(task.date);
+      
       setEditingTask(task);
       setTaskData({
         id: task.id,
         title: task.name,
         description: task.description || '',
-        due_date: task.date,
+        due_date: convertedDate, // Sử dụng hàm convertDateFormat đã có
         completed: task.completed,
         subtasks: task.subtasks || []
       });
@@ -544,73 +558,76 @@ function App() {
 
   // Thêm hàm xử lý update task
   const handleUpdateTask = async (formData) => {
-    if (isGuestMode) {
-      // Update trong localStorage
-      const updatedTask = localStorageService.updateTask(editingTask.id, formData);
-      if (updatedTask) {
-        setTasks(prevTasks => 
-          prevTasks.map(t => 
-            t.id === editingTask.id ? updatedTask : t
-          )
-        );
-        setEditModalOpen(false);
-        setEditingTask(null);
-        setTaskData({
-          title: '',
-          description: '',
-          due_date: '',
-          completed: false
-        });
-      }
-      return;
-    }
     try {
       console.log('Current formData:', formData);
   
-      const date = new Date(formData.due_date);
-      const isoDate = date.toISOString().split('T')[0];
+      if (isGuestMode) {
+        // Xử lý update trong localStorage
+        const updatedTask = localStorageService.updateTask(editingTask.id, {
+          title: formData.title,
+          description: formData.description,
+          due_date: formData.due_date, // Giữ nguyên ngày từ form
+          completed: formData.completed,
+          assigned_to: null
+        });
   
-      const updatedTaskData = {
-        title: formData.title,
-        description: formData.description || '',
-        due_date: isoDate,
-        completed: formData.completed ? 1 : 0,
-        created_by: user.id,
-        assigned_to: formData.assigned_to || null,  // Giữ nguyên giá trị từ form
-        subtasks: formData.subtasks?.map(subtask => ({
-          title: subtask.title,
-          description: subtask.description || '',
-          due_date: subtask.due_date,
-          completed: subtask.completed ? 1 : 0,
+        // Cập nhật state với format hiển thị
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t.id === editingTask.id 
+              ? {
+                  ...t,
+                  name: formData.title,
+                  description: formData.description,
+                  date: convertDateToDayOfWeek(formatDate(formData.due_date)),
+                  completed: formData.completed,
+                  assigned_to: null
+                }
+              : t
+          )
+        );
+      } else {
+        // Xử lý update khi đăng nhập
+        const updatedTaskData = {
+          title: formData.title,
+          description: formData.description || '',
+          due_date: formData.due_date, // Giữ nguyên ngày từ form
+          completed: formData.completed ? 1 : 0,
           created_by: user.id,
-          assigned_to: subtask.assigned_to || null
-        }))
-      };
+          assigned_to: formData.assigned_to || null,
+          subtasks: formData.subtasks?.map(subtask => ({
+            title: subtask.title,
+            description: subtask.description || '',
+            due_date: subtask.due_date,
+            completed: subtask.completed ? 1 : 0,
+            created_by: user.id,
+            assigned_to: subtask.assigned_to || null
+          }))
+        };
   
-      console.log('Sending to server:', updatedTaskData);
+        console.log('Sending to server:', updatedTaskData);
+        const response = await todoService.updateTodo(editingTask.id, updatedTaskData);
+        console.log('Server response:', response);
   
-      const response = await todoService.updateTodo(editingTask.id, updatedTaskData);
-      
-      console.log('Server response:', response);
+        // Cập nhật state với dữ liệu từ form
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t.id === editingTask.id 
+              ? {
+                  ...t,
+                  name: formData.title,
+                  description: formData.description,
+                  date: convertDateToDayOfWeek(formatDate(formData.due_date)),
+                  completed: formData.completed,
+                  assigned_to: formData.assigned_to,
+                  created_by: response.created_by
+                }
+              : t
+          )
+        );
+      }
   
-      // Sửa phần này: dùng formData.assigned_to thay vì response.assigned_to
-      setTasks(prevTasks => 
-        prevTasks.map(t => 
-          t.id === editingTask.id 
-            ? {
-                ...t,
-                name: response.title,
-                description: response.description,
-                date: convertDateToDayOfWeek(formatDate(response.due_date)),
-                completed: Boolean(response.completed),
-                assigned_to: formData.assigned_to,  // Dùng giá trị từ form
-                created_by: response.created_by,
-                created_by_name: response.created_by_name
-              }
-            : t
-        )
-      );
-      
+      // Reset form sau khi update thành công
       setEditModalOpen(false);
       setEditingTask(null);
       setTaskData({

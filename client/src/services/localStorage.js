@@ -7,45 +7,38 @@ const getNextId = (tasks) => {
   // Hàm helper để format date
   const formatDate = (date) => {
     if (!date) return '';
-    const d = new Date(date);
-    const day = d.getDate().toString().padStart(2, '0');
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    return `${day}/${month}`;
+    // Trả về định dạng YYYY-MM-DD để lưu trữ
+    return new Date(date).toISOString().split('T')[0];
   };
   
   export const localStorageService = {
     // Lấy tất cả tasks từ localStorage
     getTasks: () => {
-      const tasks = JSON.parse(localStorage.getItem('guest_tasks') || '[]');
-      return tasks;
-    },
+        const tasks = JSON.parse(localStorage.getItem('guest_tasks') || '[]');
+        return tasks.map(task => ({
+          ...task,
+          // Đảm bảo giữ nguyên due_date khi lấy ra
+          due_date: task.due_date
+        }));
+      },
   
     // Thêm task mới
     addTask: (taskData) => {
-      const tasks = localStorageService.getTasks();
-      const newTask = {
-        ...taskData,
-        id: getNextId(tasks),
-        created_by: 'guest',
-        assigned_to: null,
-        completed: false,
-        date: taskData.date || formatDate(new Date())
-      };
-      
-      if (taskData.subtasks) {
-        newTask.subtasks = taskData.subtasks.map(st => ({
-          ...st,
-          id: getNextId(tasks) + '_' + Date.now(),
+        const tasks = localStorageService.getTasks();
+        const newTask = {
+          id: getNextId(tasks),
+          title: taskData.title,
+          description: taskData.description || '',
+          due_date: formatDate(taskData.due_date), // Lưu ngày gốc
           completed: false,
           created_by: 'guest',
           assigned_to: null
-        }));
-      }
-  
-      tasks.push(newTask);
-      localStorage.setItem('guest_tasks', JSON.stringify(tasks));
-      return newTask;
-    },
+        };
+    
+        tasks.push(newTask);
+        localStorage.setItem('guest_tasks', JSON.stringify(tasks));
+        return newTask;
+      },
   
     // Cập nhật task
     updateTask: (taskId, updatedData) => {
