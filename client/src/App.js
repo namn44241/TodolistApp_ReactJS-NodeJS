@@ -10,6 +10,8 @@ import { getColorByDueDate } from './Task';
 import { userService } from './services/userService';
 import Register from './components/Register';
 import Calendar from './components/Calendar';
+import { localStorageService } from './services/localStorage';
+
 
 function displayDateFormat(dateString) {
   const today = new Date();
@@ -60,6 +62,10 @@ function App() {
 
   const [isRegistering, setIsRegistering] = useState(false);
 
+  const [isGuestMode, setIsGuestMode] = useState(() => {
+    return localStorage.getItem('isGuestMode') === 'true';
+  });
+
   // State cho danh sách tasks và form input
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
@@ -83,6 +89,17 @@ function App() {
   });
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+
+  const handleGuestMode = () => {
+    setIsGuestMode(true);
+    localStorage.setItem('isGuestMode', 'true');
+    setUser(null);
+    localStorage.removeItem('user');
+    // Load tasks từ localStorage nếu có
+    const guestTasks = localStorageService.getTasks();
+    setTasks(guestTasks);
+  };
+
 
   // Trong function App()
   const handleDateSelect = (date) => {
@@ -124,23 +141,35 @@ function App() {
   };
 
   // Sửa hàm setUser để lưu vào localStorage
-  const handleLogin = (userData) => {
+  const handleLogin = async (userData) => {
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.removeItem('isGuestMode'); // Xóa guest mode khi đăng nhập
     setUser(userData);
+    setIsGuestMode(false);
+    
+    // Nếu đang ở guest mode, sync tasks lên server
+    if (isGuestMode) {
+      try {
+        await localStorageService.syncTasksToServer(todoService, userData.id);
+      } catch (error) {
+        console.error('Error syncing tasks:', error);
+      }
+    }
   };
 
   // Sửa hàm logout để xóa khỏi localStorage
   const handleLogout = () => {
-    localStorage.removeItem('user');
     setUser(null);
-    // Có thể thêm reset các state khác nếu cần
+    setIsGuestMode(false);
+    localStorage.removeItem('user');
+    localStorage.removeItem('isGuestMode');
     setTasks([]);
-    setUsers([]);
   };
 
   // Fetch tasks từ API khi component mount
   useEffect(() => {
-    const getTasks = async () => {
+    // 1. Khai báo các hàm async
+    const fetchTasksFromServer = async () => {
       try {
         const data = await todoService.getAllTodos();
         console.log('Raw tasks data:', data);
@@ -148,27 +177,15 @@ function App() {
         if (Array.isArray(data)) {
           const formattedTasks = data
             .filter(task => {
-              console.log('Checking task:', task); // Log task đang check
-              console.log('Current user:', user); // Log user hiện tại
-              
               if (user.role === 'admin') return true;
               
-              // Check từng điều kiện và log kết quả
               const isCreator = task.created_by === user.id;
               const isAssigned = task.assigned_to === user.id;
-              const hasAssignedSubtask = task.subtasks?.some(st => {
-                console.log('Checking subtask:', st); // Log subtask
-                return st.assigned_to === user.id;
-              });
+              const hasAssignedSubtask = task.subtasks?.some(st => 
+                st.assigned_to === user.id
+              );
     
-              console.log('Is creator:', isCreator);
-              console.log('Is assigned:', isAssigned);
-              console.log('Has assigned subtask:', hasAssignedSubtask);
-    
-              const shouldShow = isCreator || isAssigned || hasAssignedSubtask;
-              console.log('Should show task:', shouldShow);
-    
-              return shouldShow;
+              return isCreator || isAssigned || hasAssignedSubtask;
             })
             .map(task => ({
               id: task.id,
@@ -189,32 +206,49 @@ function App() {
         setTasks([]);
       }
     };
-
-    const getUsers = async () => {
+  
+    const fetchUsers = async () => {
       try {
         const data = await userService.getAllUsers();
-        console.log('Raw users data:', data); // Log để kiểm tra format
+        console.log('Raw users data:', data);
         
-        // Kiểm tra và xử lý data từ API
-        if (data && data.status === 'success' && Array.isArray(data.data)) {
-          setUsers(data.data); // Lấy mảng users từ data.data
+        if (data?.status === 'success' && Array.isArray(data.data)) {
+          setUsers(data.data);
         } else {
-          setUsers([]); // Set empty array nếu không có data hợp lệ
+          setUsers([]);
           console.error('Invalid users data format:', data);
         }
       } catch (error) {
         console.error('Error fetching users:', error);
-        setUsers([]); // Set empty array khi có lỗi
+        setUsers([]);
       }
     };
-
-    if (user) {
-      getTasks();
-      if (user.role === 'admin' || user.role === 'manager') {
-        getUsers(); // Chỉ admin và manager mới cần danh sách users
+  
+    // 2. Logic chính của useEffect
+    const loadData = async () => {
+      // Nếu đang ở guest mode
+      if (isGuestMode) {
+        const guestTasks = localStorageService.getTasks();
+        setTasks(guestTasks);
+        return;
       }
-    }
-  }, [user]);
+  
+      // Nếu có user đăng nhập
+      if (user) {
+        // Fetch tasks cho mọi user
+        await fetchTasksFromServer();
+  
+        // Fetch users chỉ cho admin/manager
+        if (user.role === 'admin' || user.role === 'manager') {
+          await fetchUsers();
+        }
+      }
+    };
+  
+    // 3. Gọi hàm loadData
+    loadData();
+  
+  }, [user, isGuestMode]); // Chạy lại khi user hoặc isGuestMode thay đổi
 
   // Thêm hàm xử lý sort theo ngày
   const handleSortByDate = () => {
@@ -301,59 +335,74 @@ function App() {
   // Xử lý khi click nút thêm task
   const addTask = () => {
     if (newTask.trim() !== '' && newDate !== '') {
-      setTaskData({
+      const taskData = {
         title: newTask,
         description: '',
         due_date: newDate,
         completed: false,
-        assigned_to: null,  // Thêm assigned_to
-        subtasks: [] 
-      });
-      setModalOpen(true);
+        assigned_to: null,
+        subtasks: []
+      };
+  
+      if (isGuestMode) {
+        // Mở modal để nhập thông tin task
+        setTaskData(taskData);
+        setModalOpen(true);
+      } else {
+        // Logic cũ cho user đăng nhập
+        setTaskData(taskData);
+        setModalOpen(true);
+      }
     } else {
       alert("Điền đầy đủ thông tin nhiệm vụ và ngày đi má!");
     }
   };
 
   // Xử lý khi submit form trong modal
-  const handleSubmit = async (formData) => { 
+  const handleSubmit = async (formData) => {
     try {
-      console.log('Sending task data:', formData);
+      if (isGuestMode) {
+        // Thêm task vào localStorage
+        const newTask = localStorageService.addTask({
+          title: formData.title,
+          description: formData.description || '',
+          due_date: formData.due_date,
+          completed: false,
+          assigned_to: null,
+          subtasks: []
+        });
   
-      const taskToCreate = {
-        title: formData.title,
-        description: formData.description || '',
-        due_date: formData.due_date,
-        completed: formData.completed ? 1 : 0,
-        created_by: user.id,
-        assigned_to: formData.assigned_to || null,
-        subtasks: formData.subtasks?.map(subtask => ({
-          title: subtask.title,
-          description: subtask.description || '',
-          due_date: subtask.due_date,
-          completed: subtask.completed ? 1 : 0,
+        setTasks(prev => [...prev, {
+          id: newTask.id,
+          name: newTask.title,
+          description: newTask.description,
+          date: convertDateToDayOfWeek(formatDate(newTask.due_date)),
+          completed: false,
+          assigned_to: null
+        }]);
+      } else {
+        // Logic cũ cho user đăng nhập
+        const response = await todoService.createTodo({
+          title: formData.title,
+          description: formData.description || '',
+          due_date: formData.due_date,
+          completed: false,
           created_by: user.id,
-          assigned_to: subtask.assigned_to || null
-        }))
-      };
+          assigned_to: formData.assigned_to
+        });
   
-      console.log('Task to create:', taskToCreate);
+        setTasks(prev => [...prev, {
+          id: response.id,
+          name: response.title,
+          description: response.description,
+          date: convertDateToDayOfWeek(formatDate(response.due_date)),
+          completed: false,
+          created_by: response.created_by,
+          assigned_to: response.assigned_to
+        }]);
+      }
   
-      const response = await todoService.createTodo(taskToCreate);
-      console.log('Server response:', response);
-  
-      const newTask = {
-        id: response.id,
-        name: response.title,
-        description: response.description,
-        date: convertDateToDayOfWeek(formatDate(response.due_date)),
-        completed: Boolean(response.completed),
-        assigned_to: response.assigned_to,  // Thêm assigned_to
-        created_by: response.created_by,
-        created_by_name: response.created_by_name
-      };
-      
-      setTasks([...tasks, newTask]);
+      // Reset form và đóng modal
       setModalOpen(false);
       setNewTask('');
       setNewDate('');
@@ -362,16 +411,28 @@ function App() {
         description: '',
         due_date: '',
         completed: false,
-        assigned_to: null  // Reset assigned_to
+        assigned_to: null
       });
     } catch (error) {
       console.error('Error creating task:', error);
-      alert('Có lỗi xảy ra khi thêm nhiệm vụ!');
+      alert('Có lỗi xảy ra khi tạo nhiệm vụ!');
     }
   };
-
+  
   // Xử lý toggle completed
   const toggleTaskComplete = async (taskId) => {
+    if (isGuestMode) {
+      // Xử lý trong localStorage
+      const updatedTask = localStorageService.toggleTaskComplete(taskId);
+      if (updatedTask) {
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t.id === taskId ? {...t, completed: !t.completed} : t
+          )
+        );
+      }
+      return;
+    }
     try {
       const task = tasks.find(t => t.id === taskId);
       if (task) {
@@ -414,6 +475,20 @@ function App() {
 
    // Thêm hàm xử lý edit task
    const handleEditTask = async (task) => {
+    if (isGuestMode) {
+      // Trong guest mode, set data trực tiếp từ task hiện tại
+      setEditingTask(task);
+      setTaskData({
+        id: task.id,
+        title: task.name,
+        description: task.description || '',
+        due_date: task.date,
+        completed: task.completed,
+        subtasks: task.subtasks || []
+      });
+      setEditModalOpen(true);
+      return;
+    }
     try {
       const taskDetail = await todoService.getTodoById(task.id);
       
@@ -446,6 +521,12 @@ function App() {
 
   // Thêm hàm xử lý delete task
   const handleDeleteTask = async (taskId) => {
+    if (isGuestMode) {
+      // Delete từ localStorage
+      localStorageService.deleteTask(taskId);
+      setTasks(prev => prev.filter(t => t.id !== taskId));
+      return;
+    }
     try {
       await todoService.deleteTodo(taskId);
       setTasks(tasks.filter(t => t.id !== taskId));
@@ -457,9 +538,29 @@ function App() {
 
   // Thêm hàm xử lý update task
   const handleUpdateTask = async (formData) => {
+    if (isGuestMode) {
+      // Update trong localStorage
+      const updatedTask = localStorageService.updateTask(editingTask.id, formData);
+      if (updatedTask) {
+        setTasks(prevTasks => 
+          prevTasks.map(t => 
+            t.id === editingTask.id ? updatedTask : t
+          )
+        );
+        setEditModalOpen(false);
+        setEditingTask(null);
+        setTaskData({
+          title: '',
+          description: '',
+          due_date: '',
+          completed: false
+        });
+      }
+      return;
+    }
     try {
       console.log('Current formData:', formData);
-
+  
       const date = new Date(formData.due_date);
       const isoDate = date.toISOString().split('T')[0];
   
@@ -469,7 +570,7 @@ function App() {
         due_date: isoDate,
         completed: formData.completed ? 1 : 0,
         created_by: user.id,
-        assigned_to: formData.assigned_to || null,
+        assigned_to: formData.assigned_to || null,  // Giữ nguyên giá trị từ form
         subtasks: formData.subtasks?.map(subtask => ({
           title: subtask.title,
           description: subtask.description || '',
@@ -486,6 +587,7 @@ function App() {
       
       console.log('Server response:', response);
   
+      // Sửa phần này: dùng formData.assigned_to thay vì response.assigned_to
       setTasks(prevTasks => 
         prevTasks.map(t => 
           t.id === editingTask.id 
@@ -495,7 +597,7 @@ function App() {
                 description: response.description,
                 date: convertDateToDayOfWeek(formatDate(response.due_date)),
                 completed: Boolean(response.completed),
-                assigned_to: response.assigned_to,  // Thêm assigned_to
+                assigned_to: formData.assigned_to,  // Dùng giá trị từ form
                 created_by: response.created_by,
                 created_by_name: response.created_by_name
               }
@@ -510,7 +612,7 @@ function App() {
         description: '',
         due_date: '',
         completed: false,
-        assigned_to: null  // Reset assigned_to
+        assigned_to: null
       });
     } catch (error) {
       console.error('Error updating task:', error);
@@ -518,7 +620,7 @@ function App() {
     }
   };
 
-  if (!user) {
+  if (!user && !isGuestMode) {
     return (
       isRegistering ? (
         <Register 
@@ -529,8 +631,9 @@ function App() {
         />
       ) : (
         <Login 
-          onLogin={handleLogin} 
+          onLogin={handleLogin}
           onSwitchToRegister={() => setIsRegistering(true)}
+          onGuestMode={handleGuestMode}  // Thêm prop này
         />
       )
     );
@@ -544,8 +647,22 @@ function App() {
           My work <span role="img" aria-label="target">🎯</span>
         </div>
         <div className="user-info">
-          <span>{user.username}</span>
-          <button className="logout-btn" onClick={handleLogout}>Đăng xuất</button>
+          <span>{isGuestMode ? 'Khách' : user?.username}</span>
+          {isGuestMode ? (
+            <button 
+              className="login-btn" 
+              onClick={() => {
+                setIsGuestMode(false);
+                setUser(null);
+              }}
+            >
+              Đăng nhập
+            </button>
+          ) : (
+            <button className="logout-btn" onClick={handleLogout}>
+              Đăng xuất
+            </button>
+          )}
         </div>
       </h1>
       
