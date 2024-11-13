@@ -366,50 +366,56 @@ function App() {
         const newTask = localStorageService.addTask({
           title: formData.title,
           description: formData.description || '',
-          due_date: formData.due_date,
+          due_date: formData.due_date, // Giữ nguyên ngày được chọn
           completed: false,
           assigned_to: null,
           subtasks: []
         });
-  
-        setTasks(prev => [...prev, {
+
+        // Thêm vào state với đúng format hiển thị
+        const formattedTask = {
           id: newTask.id,
-          name: newTask.title,
-          description: newTask.description,
-          date: convertDateToDayOfWeek(formatDate(newTask.due_date)),
+          name: formData.title, // Dùng title từ form
+          description: formData.description,
+          date: convertDateToDayOfWeek(formatDate(formData.due_date)), // Dùng due_date từ form
           completed: false,
           assigned_to: null
-        }]);
+        };
+        
+        setTasks(prev => [...prev, formattedTask]);
       } else {
-        // Logic cũ cho user đăng nhập
+        // Logic cho user đăng nhập
         const response = await todoService.createTodo({
           title: formData.title,
           description: formData.description || '',
-          due_date: formData.due_date,
+          due_date: formData.due_date, // Giữ nguyên ngày được chọn
           completed: false,
           created_by: user.id,
           assigned_to: formData.assigned_to
         });
-  
-        setTasks(prev => [...prev, {
+
+        // Thêm vào state với đúng format
+        const formattedTask = {
           id: response.id,
-          name: response.title,
-          description: response.description,
-          date: convertDateToDayOfWeek(formatDate(response.due_date)),
+          name: formData.title, // Dùng title từ form
+          description: formData.description,
+          date: convertDateToDayOfWeek(formatDate(formData.due_date)), // Dùng due_date từ form
           completed: false,
           created_by: response.created_by,
           assigned_to: response.assigned_to
-        }]);
+        };
+        
+        setTasks(prev => [...prev, formattedTask]);
       }
-  
-      // Reset form và đóng modal
+
+      // Reset form và đóng modal sau khi đã thêm task thành công
       setModalOpen(false);
       setNewTask('');
       setNewDate('');
       setTaskData({
         title: '',
         description: '',
-        due_date: '',
+        due_date: '', // Reset sau khi đã thêm task
         completed: false,
         assigned_to: null
       });
