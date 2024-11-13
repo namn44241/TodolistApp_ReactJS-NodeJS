@@ -11,13 +11,10 @@ import { userService } from './services/userService';
 import Register from './components/Register';
 import Calendar from './components/Calendar';
 
-
-
-function convertDateToDayOfWeek(dateString) {
+function displayDateFormat(dateString) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   
-  // Chuyển đổi dateString thành Date object
   const [day, month, year] = dateString.split('/');
   const date = new Date(year, month - 1, day);
   date.setHours(0, 0, 0, 0);
@@ -30,7 +27,7 @@ function convertDateToDayOfWeek(dateString) {
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Tomorrow';
   if (diffDays === -1) return 'Yesterday';
-  if (diffDays < -1) return `${day}/${month}`; // Các ngày trong quá khứ
+  if (diffDays < -1) return `${day}/${month}`; 
   
   // Các ngày trong tương lai (trong vòng 7 ngày)
   if (diffDays <= 7) {
@@ -40,6 +37,16 @@ function convertDateToDayOfWeek(dateString) {
   
   // Hơn 7 ngày trong tương lai
   return `${day}/${month}`;
+}
+
+// Logic để tính ngày trong lịch (DD/MM)
+function calendarDateFormat(dateString) {
+  const [day, month, year] = dateString.split('/');
+  return `${day}/${month}`;
+}
+
+function convertDateToDayOfWeek(dateString) {
+  return displayDateFormat(dateString);
 }
 
 function App() {
@@ -77,44 +84,38 @@ function App() {
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
 
+  // Trong function App()
   const handleDateSelect = (date) => {
     const tasksOnDate = tasks.filter(task => {
-      // Xử lý các trường hợp đặc biệt như "Today", "Tomorrow"
-      if (task.date === "Today") {
-        const today = new Date();
-        return (
-          date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear()
-        );
-      }
+      // Chuyển date được chọn sang định dạng DD/MM
+      const selectedDay = date.getDate().toString().padStart(2, '0');
+      const selectedMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+      const selectedDateStr = `${selectedDay}/${selectedMonth}`;
+  
+      // Lấy ngày hiện tại để so sánh với "Today" và "Tomorrow"
+      const today = new Date();
+      const todayStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}`;
       
-      if (task.date === "Tomorrow") {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        return (
-          date.getDate() === tomorrow.getDate() &&
-          date.getMonth() === tomorrow.getMonth() &&
-          date.getFullYear() === tomorrow.getFullYear()
-        );
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const tomorrowStr = `${tomorrow.getDate().toString().padStart(2, '0')}/${(tomorrow.getMonth() + 1).toString().padStart(2, '0')}`;
+  
+      // Chuyển đổi task.date thành định dạng DD/MM để so sánh
+      let taskDateStr;
+      if (task.date === 'Today') {
+        taskDateStr = todayStr;
+      } else if (task.date === 'Tomorrow') {
+        taskDateStr = tomorrowStr;
+      } else if (task.date.includes('/')) {
+        const [day, month] = task.date.split('/');
+        taskDateStr = `${day}/${month}`;
+      } else {
+        // Nếu là thứ trong tuần (Wednesday,...), bỏ qua không hiển thị
+        return false;
       }
   
-      // Nếu là ngày bình thường (format: DD/MM)
-      if (task.date.includes('/')) {
-        const [taskDay, taskMonth] = task.date.split('/');
-        return (
-          date.getDate() === parseInt(taskDay) &&
-          date.getMonth() === parseInt(taskMonth) - 1
-        );
-      }
-  
-      // Xử lý các trường hợp còn lại (ngày trong tuần)
-      const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      if (daysOfWeek.includes(task.date)) {
-        return date.getDay() === daysOfWeek.indexOf(task.date);
-      }
-  
-      return false;
+      // So sánh ngày được chọn với ngày của task
+      return selectedDateStr === taskDateStr;
     });
   
     console.log('Selected date:', date);
@@ -618,7 +619,7 @@ function App() {
           </div>
           
           <div className="color-column">
-            <h3>Trong tuần</h3>
+            <h3>Sắp đến hạn..</h3>
             <TaskList
               tasks={tasks.filter(task => getColorByDueDate(task.date) === 'orange')}
               onToggleComplete={toggleTaskComplete}

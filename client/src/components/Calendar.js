@@ -48,41 +48,37 @@ function Calendar({ tasks, onSelectDate }) {
   // Kiểm tra ngày có task không
   const getTaskCountForDate = (date) => {
     let count = 0;
+    const targetDay = date.getDate().toString().padStart(2, '0');
+    const targetMonth = (date.getMonth() + 1).toString().padStart(2, '0');
+    const targetDateStr = `${targetDay}/${targetMonth}`;
+  
+    // Lấy ngày hiện tại để so sánh với Today và Tomorrow
+    const today = new Date();
+    const todayStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+    
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = `${tomorrow.getDate().toString().padStart(2, '0')}/${(tomorrow.getMonth() + 1).toString().padStart(2, '0')}`;
+  
     tasks.forEach(task => {
-      // Xử lý "Today"
-      if (task.date === "Today") {
-        const today = new Date();
-        if (
-          date.getDate() === today.getDate() &&
-          date.getMonth() === today.getMonth() &&
-          date.getFullYear() === today.getFullYear()
-        ) {
-          count++;
-        }
+      let taskDateStr;
+      if (task.date === 'Today') {
+        taskDateStr = todayStr;
+      } else if (task.date === 'Tomorrow') {
+        taskDateStr = tomorrowStr;
+      } else if (task.date.includes('/')) {
+        const [day, month] = task.date.split('/');
+        taskDateStr = `${day}/${month}`;
+      } else {
+        // Bỏ qua các task có date là thứ trong tuần
+        return;
       }
-      // Xử lý "Tomorrow" 
-      else if (task.date === "Tomorrow") {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        if (
-          date.getDate() === tomorrow.getDate() &&
-          date.getMonth() === tomorrow.getMonth() &&
-          date.getFullYear() === tomorrow.getFullYear()
-        ) {
-          count++;
-        }
-      }
-      // Xử lý DD/MM
-      else if (task.date.includes('/')) {
-        const [taskDay, taskMonth] = task.date.split('/');
-        if (
-          date.getDate() === parseInt(taskDay) &&
-          date.getMonth() === parseInt(taskMonth) - 1
-        ) {
-          count++;
-        }
+  
+      if (targetDateStr === taskDateStr) {
+        count++;
       }
     });
+  
     return count;
   };
 
