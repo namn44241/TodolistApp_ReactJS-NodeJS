@@ -2,6 +2,9 @@ import React from 'react';
 
 // Thêm export cho hàm này
 export function getColorByDueDate(dueDate) {
+
+  if (!dueDate) return 'green';
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   

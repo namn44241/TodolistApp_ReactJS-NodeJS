@@ -52,6 +52,20 @@ function convertDateToDayOfWeek(dateString) {
 }
 
 function App() {
+
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    const savedGuestMode = localStorage.getItem('isGuestMode') === 'true';
+    
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+      setIsGuestMode(false);
+    } else if (savedGuestMode) {
+      setIsGuestMode(true);
+    }
+  }, []);
+
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem('user');
     return savedUser ? JSON.parse(savedUser) : null;
@@ -161,9 +175,18 @@ function App() {
   const handleLogout = () => {
     setUser(null);
     setIsGuestMode(false);
+    // Xóa hết dữ liệu liên quan đến session
     localStorage.removeItem('user');
     localStorage.removeItem('isGuestMode');
+    localStorage.removeItem('guest_tasks'); // Nếu bạn lưu tasks của guest
     setTasks([]);
+  };
+
+  // Thêm hàm mới để xử lý chuyển sang form đăng nhập từ guest mode
+  const switchToLogin = () => {
+    setIsGuestMode(false);
+    localStorage.removeItem('isGuestMode');
+    // Không xóa guest_tasks để giữ dữ liệu khi user muốn quay lại guest mode
   };
 
   // Fetch tasks từ API khi component mount
@@ -376,7 +399,8 @@ function App() {
         const newTask = localStorageService.addTask({
           title: formData.title,
           description: formData.description,
-          due_date: formData.due_date // Gửi ngày gốc vào localStorage
+          due_date: formData.due_date,
+          subtasks: formData.subtasks || [] 
         });
 
         // Thêm vào state với đúng format hiển thị
@@ -386,7 +410,8 @@ function App() {
           description: formData.description,
           date: convertDateToDayOfWeek(formatDate(formData.due_date)), // Dùng due_date từ form
           completed: false,
-          assigned_to: null
+          assigned_to: null,
+          subtasks: formData.subtasks || [] 
         };
         
         setTasks(prev => [...prev, {
@@ -568,7 +593,8 @@ function App() {
           description: formData.description,
           due_date: formData.due_date, // Giữ nguyên ngày từ form
           completed: formData.completed,
-          assigned_to: null
+          assigned_to: null,
+          subtasks: formData.subtasks || [] 
         });
   
         // Cập nhật state với format hiển thị
@@ -581,7 +607,8 @@ function App() {
                   description: formData.description,
                   date: convertDateToDayOfWeek(formatDate(formData.due_date)),
                   completed: formData.completed,
-                  assigned_to: null
+                  assigned_to: null,
+                  subtasks: formData.subtasks || [] 
                 }
               : t
           )
@@ -673,11 +700,8 @@ function App() {
           <span>{isGuestMode ? 'Khách' : user?.username}</span>
           {isGuestMode ? (
             <button 
-              className="login-btn" 
-              onClick={() => {
-                setIsGuestMode(false);
-                setUser(null);
-              }}
+              onClick={switchToLogin} 
+              className="login-button"
             >
               Đăng nhập
             </button>

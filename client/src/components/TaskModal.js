@@ -68,11 +68,11 @@ function TaskModal({ open, handleClose, taskData, setTaskData, handleSubmit, use
                   type="button" 
                   className="add-button"
                   onClick={() => setSubtasks([...subtasks, {
-                    id: subtasks.length + 1,
+                    id: Date.now(), // Dùng timestamp thay vì length + 1
                     title: '',
                     due_date: '',
-                    created_by: 'guest',
-                    created_by_name: 'Khách',
+                    created_by: user?.id || 'guest',
+                    created_by_name: user?.username || 'Khách',
                     assigned_to: null,
                     completed: false
                   }])}
@@ -138,21 +138,13 @@ function TaskModal({ open, handleClose, taskData, setTaskData, handleSubmit, use
                           </td>
                           <td>Khách</td>
                           <td>
-                            <button 
-                              type="button"
-                              className="remove-button"
-                              onClick={() => setSubtasks([...subtasks, {
-                                id: subtasks.length + 1,
-                                title: '',
-                                due_date: '',
-                                created_by: isGuestMode ? 'guest' : user?.id,
-                                created_by_name: isGuestMode ? 'Khách' : user?.username,
-                                assigned_to: null,
-                                completed: false
-                              }])}
-                            >
-                              ×
-                            </button>
+                          <button 
+                            type="button"
+                            className="remove-button"
+                            onClick={() => setSubtasks(subtasks.filter((_, i) => i !== index))}
+                          >
+                            ×
+                          </button>
                           </td>
                         </tr>
                       ))}
@@ -175,14 +167,14 @@ function TaskModal({ open, handleClose, taskData, setTaskData, handleSubmit, use
                   subtasks: subtasks.map(st => ({
                     ...st,
                     completed: st.completed ? 1 : 0,
-                    created_by: isGuestMode ? 'guest' : user?.id,
-                    created_by_name: isGuestMode ? 'Khách' : user?.username,
+                    created_by: user?.id || 'guest', // Thêm check null
+                    created_by_name: user?.username || 'Khách',
                     assigned_to: st.assigned_to || null
                   }))
                 };
                 console.log('Submitting form data:', formData);
                 handleSubmit(formData);
-              }}
+              }} 
               className="btn-submit"
             >
               Thêm
@@ -388,12 +380,15 @@ function TaskModal({ open, handleClose, taskData, setTaskData, handleSubmit, use
             onClick={() => {
               const formData = {
                 ...taskData,
-                assigned_to: taskData.assigned_to || null,  // Đảm bảo gửi assigned_to
+                assigned_to: taskData.assigned_to || null,
                 subtasks: subtasks.map(st => ({
-                  ...st,
+                  id: st.id,
+                  title: st.title || '',
+                  due_date: st.due_date || '',
                   completed: st.completed ? 1 : 0,
-                  created_by: user.id,
-                  assigned_to: st.assigned_to || null
+                  created_by: isGuestMode ? 'guest' : (user?.id || 'guest'),
+                  created_by_name: isGuestMode ? 'Khách' : (user?.username || 'Khách'),
+                  assigned_to: null
                 }))
               };
               console.log('Submitting form data:', formData);
