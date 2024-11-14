@@ -7,8 +7,17 @@ function EmailSubscription({ user }) {
   const [message, setMessage] = useState(null);
 
   useEffect(() => {
+    if (user?.email && user?.email_notifications) {
+      setHasSubscribed(true);
+      setEmail(user.email);
+      setIsLoading(false);
+      return;
+    }
+
     if (user && user.id) {
       checkSubscriptionStatus();
+    } else {
+      setIsLoading(false);
     }
   }, [user]);
 
@@ -50,6 +59,14 @@ function EmailSubscription({ user }) {
       const data = await response.json();
 
       if (response.ok) {
+        const localUser = JSON.parse(localStorage.getItem('user'));
+        const updatedUser = {
+          ...localUser,
+          email: email,
+          email_notifications: true
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
         setMessage({
           type: 'success',
           text: 'Đăng ký thành công! Vui lòng kiểm tra email của bạn.'
@@ -69,11 +86,15 @@ function EmailSubscription({ user }) {
     }
   };
 
-  if (isLoading) {
-    return null;
+  if (hasSubscribed) {
+    return (
+      <div className="email-subscription">
+        <p>Bạn đã đăng ký nhận thông báo qua email: {email}</p>
+      </div>
+    );
   }
 
-  if (hasSubscribed) {
+  if (isLoading) {
     return null;
   }
 

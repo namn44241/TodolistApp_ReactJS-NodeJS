@@ -3,7 +3,7 @@ const db = require('../configs/database');
 const { sendTaskNotification } = require('./emailService');
 
 // Chạy lúc 18:35 hàng ngày
-cron.schedule('43 18 * * *', async () => {
+cron.schedule('00 21 * * *', async () => {
   try {
     console.log('=== BẮT ĐẦU KIỂM TRA CÔNG VIỆC ===');
     console.log('Thời gian:', new Date().toLocaleString('vi-VN'));
