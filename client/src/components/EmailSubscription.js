@@ -1,9 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function EmailSubscription({ user, onSubscribe }) {
+function EmailSubscription({ user }) {
+  const [hasSubscribed, setHasSubscribed] = useState(false);
   const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    if (user && user.id) {
+      checkSubscriptionStatus();
+    }
+  }, [user]);
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/users/${user.id}`);
+      const data = await response.json();
+      
+      if (data.status === 'success') {
+        if (data.data.email && data.data.email_notifications) {
+          setHasSubscribed(true);
+          setEmail(data.data.email);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking subscription:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -11,7 +36,7 @@ function EmailSubscription({ user, onSubscribe }) {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/subscribe', {
+      const response = await fetch('http://localhost:5000/api/users/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,27 +47,35 @@ function EmailSubscription({ user, onSubscribe }) {
         })
       });
 
+      const data = await response.json();
+
       if (response.ok) {
         setMessage({
           type: 'success',
           text: 'Đăng ký thành công! Vui lòng kiểm tra email của bạn.'
         });
-        onSubscribe(email);
-        setEmail(''); // Clear input
+        setHasSubscribed(true);
       } else {
-        const error = await response.json();
-        throw new Error(error.message || 'Có lỗi xảy ra');
+        throw new Error(data.message || 'Có lỗi xảy ra');
       }
     } catch (error) {
-      console.error('Error subscribing:', error);
+      console.error('Error:', error);
       setMessage({
         type: 'error',
-        text: 'Có lỗi xảy ra khi đăng ký. Vui lòng thử lại!'
+        text: error.message
       });
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return null;
+  }
+
+  if (hasSubscribed) {
+    return null;
+  }
 
   return (
     <div className="email-subscription">
