@@ -801,3 +801,78 @@ select:focus {
     transform: translateX(0);
   }
 }
+
+.email-subscription {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 20px 0;
+}
+
+.email-subscription h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+}
+
+.email-subscription form {
+  display: flex;
+  gap: 10px;
+}
+
+.email-subscription input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.email-subscription button {
+  background: #4a90e2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.email-subscription button:hover {
+  background: #357abd;
+  transform: translateY(-2px);
+}
+
+.subscribed-message {
+  color: #28a745;
+  font-weight: 500;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.email-subscription .message {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.email-subscription .message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.email-subscription .message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.email-subscription button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

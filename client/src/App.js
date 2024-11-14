@@ -11,6 +11,7 @@ import { userService } from './services/userService';
 import Register from './components/Register';
 import Calendar from './components/Calendar';
 import { localStorageService } from './services/localStorage';
+import EmailSubscription from './components/EmailSubscription';
 
 
 function displayDateFormat(dateString) {
@@ -670,6 +671,26 @@ function App() {
     }
   };
 
+  const handleEmailSubscribe = async (email) => {
+    try {
+      // Cập nhật user preferences trong database
+      await userService.updateEmailPreferences(user.id, {
+        email: email,
+        notifyDueTasks: true,
+        notifyAssignedTasks: true
+      });
+      
+      // Cập nhật state nếu cần
+      setUser(prev => ({
+        ...prev,
+        email: email,
+        emailNotifications: true
+      }));
+    } catch (error) {
+      console.error('Error updating email preferences:', error);
+    }
+  };
+
   if (!user && !isGuestMode) {
     return (
       isRegistering ? (
@@ -869,6 +890,13 @@ function App() {
           }
         }}
       />
+      
+      {user && !isGuestMode && (
+        <EmailSubscription 
+          user={user}
+          onSubscribe={handleEmailSubscribe}
+        />
+      )}
     </div>
   );
 }
