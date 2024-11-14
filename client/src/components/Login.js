@@ -48,7 +48,7 @@ function Login({ onLogin, onSwitchToRegister, onGuestMode }) {
         <button type="submit" className="login-button">Đăng nhập</button>
 
         <div className="guest-mode">
-          <button onClick={onGuestMode} className="guest-button">
+          <button onClick={onGuestMode} className="guest-login-btn">
             Không cần tài khoản
           </button>
         </div>
