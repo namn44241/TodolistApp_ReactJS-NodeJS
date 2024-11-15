@@ -4,7 +4,6 @@
 
 Ứng dụng Quản lý Công việc cung cấp hệ thống quản lý công việc toàn diện với nhiều tính năng như phân quyền người dùng, quản lý công việc (tasks), thông báo deadline, lịch làm việc và đồng bộ dữ liệu từ chế độ khách. Được triển khai với các công nghệ hiện đại như React, Node.js, MySQL và Docker, ứng dụng này phù hợp cho các đội nhóm muốn quản lý tiến độ và phân công công việc hiệu quả.
 
----
 
 ## Tính năng
 
@@ -59,7 +58,6 @@
 - **Đồng bộ Dữ liệu từ Chế độ Khách**:
   - Khi người dùng chuyển từ chế độ Khách sang tài khoản đăng nhập, dữ liệu công việc sẽ tự động đồng bộ vào tài khoản.
 
----
 
 ## Công nghệ Sử dụng
 
@@ -68,7 +66,6 @@
 - **Database**: MySQL
 - **Triển khai**: Docker để đóng gói và triển khai dễ dàng trên mọi môi trường.
 
----
 
 ## Cấu trúc Dự án
 
@@ -119,7 +116,6 @@ project/
 ├── docker-compose.yml    # Cấu hình Docker
 └── README.md            # Tài liệu dự án
 
----
 
 ## Database Schema
 ```sql
@@ -239,7 +235,6 @@ PUT /api/todos/:id
 ```http
 DELETE /api/todos/:id
 ```
----
 
 ## Hướng dẫn Cài đặt và Sử dụng
 
