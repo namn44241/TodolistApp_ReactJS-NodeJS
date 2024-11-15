@@ -74,43 +74,43 @@ TodolistApp/
 │   ├── public/
 │   └── src/
 │       ├── components/      # Các components
-│       │   ├── Login.js        # Component đăng nhập
-│       │   ├── Register.js     # Component đăng ký
-│       │   ├── TaskModal.js    # Modal thêm task
-│       │   ├── EditTaskModal.js # Modal sửa task
-│       │   ├── Calendar.js      # Component lịch
+│       │   ├── Login.js            # Component đăng nhập
+│       │   ├── Register.js         # Component đăng ký
+│       │   ├── TaskModal.js        # Modal thêm task
+│       │   ├── EditTaskModal.js    # Modal sửa task
+│       │   ├── Calendar.js         # Component lịch
 │       │   └── EmailSubscription.js # Component đăng ký email
-│       ├── services/         # Các services gọi API
-│       │   ├── todoService.js # Xử lý API todos
-│       │   ├── userService.js # Xử lý API users
-│       │   └── localStorage.js # Xử lý localStorage cho Guest mode
-│       ├── App.js            # Component chính
-│       ├── Task.js           # Component hiển thị task
-│       ├── TaskList.js       # Component danh sách tasks
-│       └── AddTask.js        # Component thêm task
-├── server/                  # Backend - Node.js + Express
+│       ├── services/               # Các services gọi API
+│       │   ├── todoService.js      # Xử lý API todos
+│       │   ├── userService.js      # Xử lý API users
+│       │   └── localStorage.js     # Xử lý localStorage cho Guest mode
+│       ├── App.js                 # Component chính
+│       ├── Task.js                # Component hiển thị task
+│       ├── TaskList.js            # Component danh sách tasks
+│       └── AddTask.js             # Component thêm task
+├── server/                       # Backend - Node.js + Express
 │   └── src/
-│       ├── configs/          # Cấu hình
-│       │   └── database.js   # Config kết nối MySQL
-│       ├── controllers/      # Xử lý logic
+│       ├── configs/              # Cấu hình
+│       │   └── database.js       # Config kết nối MySQL
+│       ├── controllers/          # Xử lý logic
 │       │   ├── todoController.js # Logic todos
 │       │   └── userController.js # Logic users
-│       ├── models/           # Tương tác database
-│       │   ├── todoModel.js  # Model todos
-│       │   └── userModel.js  # Model users
-│       ├── routes/           # Định nghĩa routes
-│       │   ├── todoRoutes.js # Routes todos
-│       │   └── userRoutes.js # Routes users
-│       ├── api.js            # Routes chính
-│       ├── services/         # Services
-│       │   ├── emailService.js # Gửi email
-│       │   └── cronService.js  # Jobs tự động
-│       └── app.js            # Entry point
-├── database/                # MySQL
-│   ├── createTable.sql       # Script tạo bảng
-│   └── insertTable.sql       # Script insert dữ liệu mẫu
-├── docker-compose.yml        # Cấu hình Docker
-└── README.md                 # Tài liệu dự án
+│       ├── models/               # Tương tác database
+│       │   ├── todoModel.js      # Model todos
+│       │   └── userModel.js      # Model users
+│       ├── routes/               # Định nghĩa routes
+│       │   ├── todoRoutes.js     # Routes todos
+│       │   └── userRoutes.js     # Routes users
+│       ├── api.js                # Routes chính
+│       ├── services/             # Services
+│       │   ├── emailService.js   # Gửi email
+│       │   └── cronService.js    # Jobs tự động
+│       └── app.js                # Entry point
+├── database/                     # MySQL
+│   ├── createTable.sql           # Script tạo bảng
+│   └── insertTable.sql           # Script insert dữ liệu mẫu
+├── docker-compose.yml            # Cấu hình Docker
+└── README.md                     # Tài liệu dự án
 
 
 ## Database Schema
