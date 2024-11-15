@@ -66,7 +66,7 @@
 - **Database**: MySQL
 - **Triển khai**: Docker để đóng gói và triển khai dễ dàng trên mọi môi trường.
 
-
+<!-- 
 ## Cấu trúc Dự án
 
 TodolistApp/
@@ -110,7 +110,7 @@ TodolistApp/
 │   ├── createTable.sql           # Script tạo bảng
 │   └── insertTable.sql           # Script insert dữ liệu mẫu
 ├── docker-compose.yml            # Cấu hình Docker
-└── README.md                     # Tài liệu dự án
+└── README.md                     # Tài liệu dự án -->
 
 
 ## Database Schema
