@@ -234,31 +234,45 @@ DELETE /api/todos/:id
 
 ## Hướng dẫn Cài đặt và Sử dụng
 
-1. **Di chuyển vào thư mục dự án**:
+1. **Di chuyển vào thư mục client và khởi tạo**:
     ```bash
-    cd Bai_tap_Giua_Ki
+    cd client
+    ```
+    ```bash
+    npm start
+    ```
+    
+2. **Di chuyển vào thư mục sever và khởi tạo**:
+    ```bash
+    cd ..
+    ```
+    ```bash
+    cd server
+    ```
+    ```bash
+    npm start
     ```
 
-2. **Khởi động Docker Compose**:
+3. **Khởi động Docker Compose**:
     ```bash
     docker-compose up -d
     ```
 
-3. **Truy cập phpMyAdmin**:
+4. **Truy cập phpMyAdmin**:
    - Đường dẫn: [localhost:8080](http://localhost:8844)
    - Tài khoản: `baitap`
    - Mật khẩu: `1`
 
-4. **Nhập Dữ liệu Mẫu**:
+5. **Nhập Dữ liệu Mẫu**:
    - Chọn cơ sở dữ liệu và nhập dữ liệu từ thư mục `CDSL MYSQL` trong phpMyAdmin.
 
-5. **Chạy Server Backend**:
+6. **Chạy Server Backend**:
     - Trong terminal, di chuyển vào thư mục `server` và chạy:
     ```bash
     npm run dev
     ```
 
-6. **Truy cập Ứng dụng**:
+7. **Truy cập Ứng dụng**:
    - Mở trình duyệt và truy cập [localhost:3000](http://localhost:3000)
    - Đăng nhập bằng tài khoản:
      - Admin:
@@ -271,5 +285,5 @@ DELETE /api/todos/:id
       + Username: user
       + Password: 1
 
-7. **Kiểm tra Các Tính năng**:
+8. **Kiểm tra Các Tính năng**:
    - Khám phá các chức năng của hệ thống quản lý công việc sau khi đăng nhập.
