@@ -1,5 +1,9 @@
 # Project: Quản lý Công việc
 
+## Demo:
+
+https://youtu.be/PEcgt2D-IGg?si=z4i5UUYW_exF6Upq
+
 ## Giới thiệu
 
 Ứng dụng Quản lý Công việc cung cấp hệ thống quản lý công việc toàn diện với nhiều tính năng như phân quyền người dùng, quản lý công việc (tasks), thông báo deadline, lịch làm việc và đồng bộ dữ liệu từ chế độ khách. Được triển khai với các công nghệ hiện đại như React, Node.js, MySQL và Docker, ứng dụng này phù hợp cho các đội nhóm muốn quản lý tiến độ và phân công công việc hiệu quả.
