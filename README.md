@@ -1,4 +1,4 @@
-# Todolist App ReactJS + NodeJS - Phân Quyền - Cron Job & Mail Nhắc Nhở - Giao Task - Lịch Biểu
+# Todolist App ReactJS + NodeJS - Phân Quyền - Cron Job & Mail Nhắc Nhở - Phân Quyền Giao Task - Lịch Biểu
 
 ## Demo:
 
