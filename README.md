@@ -1,4 +1,4 @@
-# Project: Quản lý Công việc
+# Todolist App ReactJS + NodeJS - Phân Quyền - Cron Job & Mail Nhắc Nhở - Giao Task - Lịch Biểu
 
 ## Demo:
 
