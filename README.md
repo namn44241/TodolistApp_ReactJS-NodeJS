@@ -277,7 +277,7 @@ DELETE /api/todos/:id
     ```
 
 7. **Truy cập Ứng dụng**:
-   - Mở trình duyệt và truy cập [localhost:3000](http://localhost:3000)
+   - Mở trình duyệt và truy cập [localhost:3001](http://localhost:3001)
    - Đăng nhập bằng tài khoản:
      - Admin:
       + Username: admin

@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:5000/api/todos';
+const API_URL = 'http://localhost:5001/api/todos';
 
 export const todoService = {
   async getAllTodos() {

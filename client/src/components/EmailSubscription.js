@@ -23,7 +23,7 @@ function EmailSubscription({ user }) {
 
   const checkSubscriptionStatus = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${user.id}`);
+      const response = await fetch(`http://localhost:5001/api/users/${user.id}`);
       const data = await response.json();
       
       if (data.status === 'success') {
@@ -45,7 +45,7 @@ function EmailSubscription({ user }) {
     setMessage(null);
 
     try {
-      const response = await fetch('http://localhost:5000/api/users/subscribe', {
+      const response = await fetch('http://localhost:5001/api/users/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
